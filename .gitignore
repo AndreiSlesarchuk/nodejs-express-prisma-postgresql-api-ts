@@ -1,0 +1,38 @@
+# --- Dependencies ---
+node_modules/
+/node_modules
+
+# --- Environment & Secrets ---
+# Keep your DB credentials and API keys safe
+.env
+.env.local
+.env.test
+*.env
+
+# --- TypeScript & Build ---
+# Compiled JavaScript files
+dist/
+out/
+*.tsbuildinfo
+
+# --- Prisma ---
+# SQLite database files (if used)
+*.db
+*.db-journal
+# Generated Prisma Client (custom paths)
+/src/generated/prisma
+/src/generated/
+
+# --- Logs & Debug ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+logs
+*.log
+
+# --- IDEs & OS Specific ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
