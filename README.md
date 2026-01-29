@@ -5,8 +5,9 @@
 ![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Swagger](https://img.shields.io/badge/-Swagger-%23C1E1C1?style=for-the-badge&logo=swagger&logoColor=black)
 
-A high-performance, type-safe RESTful API built with **Node.js**, **Express**, and **Prisma ORM**. This project implements a solid backend architecture inspired by enterprise standards.
+A high-performance, type-safe RESTful API built with **Node.js**, **Express**, and **Prisma ORM**. Featuring automated OpenAPI documentation and enterprise-grade architecture.
 
 ---
 
@@ -17,6 +18,7 @@ The project follows a **Controller-Service-Repository** pattern to ensure separa
 - **Controllers**: Handle HTTP requests and response formatting.
 - **Services**: Contain business logic and interact with the database via Prisma.
 - **Prisma ORM**: Provides end-to-end type safety and handles migrations.
+- **Swagger/OpenAPI**: Automated interactive API documentation.
 - **Middleware**: Centralized error handling and request logging.
 
 
@@ -26,6 +28,7 @@ The project follows a **Controller-Service-Repository** pattern to ensure separa
 - **Runtime**: Node.js (v20+)
 - **Language**: TypeScript (Strict mode)
 - **ORM**: Prisma 7.x (with Driver Adapters)
+- **Docs**: Swagger UI & OpenAPI 3.0
 - **Database**: PostgreSQL
 - **Development Tooling**: `tsx` for fast execution, `tsc` for builds.
 
@@ -58,9 +61,13 @@ DATABASE_URL="postgresql://user:password@localhost:5433/task_manager_db?schema=p
 
 🔌 API Documentation
     Tasks
-        Method  Endpoint    Description
-        GET     /api/tasks  Fetch all tasks from DBP
-        POST    /api/tasks  Create a new task (JSON body required)
+        Method  Endpoint        Description
+        GET     /api/tasks      Fetch all tasks from DBP
+        POST    /api/tasks      Create a new task (JSON body required)
+        GET     /api/tasks/{id} Get a specific task
+        PATCH   /api/tasks/{id} Update task status or content
+        DELETE  /api/tasks/{id} Remove a task
+        GET     /api/health     Check API & Database status
 
     Sample POST Body:
         JSON {
