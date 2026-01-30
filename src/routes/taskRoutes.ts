@@ -6,18 +6,20 @@ import {
   updateTask, 
   deleteTask 
 } from '../controllers/TaskController';
+import { validate } from '../middleware/validateResource';
+import { createTaskSchema, updateTaskSchema } from '../schemas/taskSchema';
 
 const router = Router();
 
 // Routes for base path /api/tasks
 router.route('/')
   .get(getTasks)
-  .post(createTask);
+  .post(validate(createTaskSchema), createTask);
 
 // Routes for ID /api/tasks/:id
 router.route('/:id')
   .get(getTaskById)
-  .patch(updateTask)
+  .patch(validate(updateTaskSchema), updateTask)
   .delete(deleteTask);
 
 export default router;
