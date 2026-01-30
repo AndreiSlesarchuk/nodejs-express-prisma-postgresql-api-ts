@@ -1,10 +1,10 @@
 import 'dotenv/config';
-import express, { Request, Response } from "express";
+import express from "express";
 import swaggerUi from 'swagger-ui-express';
-import { swaggerDocument } from './swaggerDocs'; // Импортируем наш конфиг
-import { createTask, deleteTask, getTaskById, getTasks, updateTask } from "./controllers/TaskController";
-import { requestLogger } from './middleware/logger';
 import { errorHandler } from './middleware/errorHandler';
+import { requestLogger } from './middleware/logger';
+import routes from './routes';
+import { swaggerDocument } from './swaggerDocs';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,22 +14,10 @@ app.use(express.json());
 app.use(requestLogger);
 
 // --- Documentation ---
-// Передаем swaggerDocument напрямую. Больше никаких ошибок парсинга YAML!
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // --- Routes ---
-app.route('/api/tasks')
-  .get(getTasks)
-  .post(createTask);
-
-app.route('/api/tasks/:id')
-  .get(getTaskById)
-  .patch(updateTask)
-  .delete(deleteTask);
-
-app.get("/api/health", (req: Request, res: Response) => {
-  res.status(200).json({ status: "UP", timestamp: new Date().toISOString() });
-});
+app.use('/api', routes);
 
 // --- Error Handling ---
 app.use(errorHandler);
