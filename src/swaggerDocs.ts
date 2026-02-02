@@ -3,10 +3,23 @@ export const swaggerDocument = {
   info: {
     title: 'Task Manager API',
     version: '1.0.0',
-    description: 'REST API with Node.js, Express and Prisma',
+    description: 'REST API with Node.js, Express, Prisma and JWT Authentication',
   },
-  servers: [{ url: 'http://localhost:3000', description: 'Development server' }],
+  servers: [
+    {
+      url: 'http://localhost:3000',
+      description: 'Development server',
+    },
+  ],
   components: {
+    securitySchemes: {
+      // Определение метода авторизации
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
     schemas: {
       Task: {
         type: 'object',
@@ -19,17 +32,61 @@ export const swaggerDocument = {
           createdAt: { type: 'string', format: 'date-time' },
         },
       },
+      LoginRequest: {
+        type: 'object',
+        required: ['username', 'password'],
+        properties: {
+          username: { type: 'string', example: 'admin' },
+          password: { type: 'string', example: 'admin' },
+        },
+      },
+      AuthResponse: {
+        type: 'object',
+        properties: {
+          message: { type: 'string', example: 'Auth successful' },
+          accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+        },
+      },
     },
   },
+  // Применяем авторизацию ко всем путям по умолчанию
+  security: [{ bearerAuth: [] }],
   paths: {
+    '/api/auth/login': {
+      post: {
+        summary: 'Login to get JWT token',
+        tags: ['Auth'],
+        security: [], // Логин должен быть доступен без токена
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Success',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
+            },
+          },
+          401: { description: 'Invalid credentials' },
+        },
+      },
+    },
     '/api/tasks': {
       get: {
         summary: 'Get all tasks',
         tags: ['Tasks'],
+        security: [], // Сделаем просмотр списка публичным, как в твоем коде
         responses: {
           200: {
             description: 'Success',
-            content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Task' } } } },
+            content: {
+              'application/json': {
+                schema: { type: 'array', items: { $ref: '#/components/schemas/Task' } },
+              },
+            },
           },
         },
       },
@@ -38,10 +95,18 @@ export const swaggerDocument = {
         tags: ['Tasks'],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/Task' } } },
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Task' } },
+          },
         },
         responses: {
-          201: { description: 'Created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Task' } } } },
+          201: {
+            description: 'Created',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/Task' } },
+            },
+          },
+          401: { description: 'Unauthorized' },
         },
       },
     },
@@ -49,26 +114,77 @@ export const swaggerDocument = {
       get: {
         summary: 'Get task by ID',
         tags: ['Tasks'],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
         responses: {
-          200: { description: 'Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Task' } } } },
+          200: {
+            description: 'Found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/Task' } },
+            },
+          },
           404: { description: 'Task not found' },
         },
       },
       patch: {
         summary: 'Update a task',
         tags: ['Tasks'],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
         requestBody: {
-          content: { 'application/json': { schema: { type: 'object', properties: { title: { type: 'string' }, description: { type: 'string' }, completed: { type: 'boolean' } } } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  description: { type: 'string' },
+                  completed: { type: 'boolean' },
+                },
+              },
+            },
+          },
         },
-        responses: { 200: { description: 'Updated' } },
+        responses: {
+          200: { description: 'Updated' },
+          401: { description: 'Unauthorized' },
+        },
       },
       delete: {
         summary: 'Delete a task',
         tags: ['Tasks'],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-        responses: { 204: { description: 'Deleted' } },
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
+        ],
+        responses: {
+          204: { description: 'Deleted' },
+          401: { description: 'Unauthorized' },
+        },
+      },
+    },
+    '/api/health': {
+      get: {
+        summary: 'Check API health status',
+        tags: ['System'],
+        security: [],
+        responses: {
+          200: {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', example: 'UP' },
+                    timestamp: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     },
   },
