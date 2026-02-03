@@ -4,12 +4,12 @@ import jwt from 'jsonwebtoken';
 export const login = (req: Request, res: Response) => {
   const { username, password } = req.body;
 
-  // Имитация проверки пользователя (в будущем тут будет запрос к БД)
+  // Imitation of user authentication. (Later it will be a request to the DB)
   if (username === 'admin' && password === 'admin') {
     const user = { name: username };
     const secret = process.env.JWT_SECRET as string;
 
-    // Генерируем токен на 1 час
+    // Generate JWT token - duration is 1 hour. 
     const accessToken = jwt.sign(user, secret, { expiresIn: '1h' });
 
     return res.json({ 
