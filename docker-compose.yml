@@ -1,6 +1,5 @@
-# docker-compose.yml
-
 services:
+  # Database PostgreSQL
   db:
     image: postgres:16
     container_name: task_manager_db_container
@@ -13,6 +12,34 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: unless-stopped
+
+  # Cache Redis
+  redis:
+    image: redis:alpine
+    container_name: task_manager_redis_container
+    ports:
+      - '6379:6379'
+    restart: unless-stopped
+
+  # App
+  app:
+    build: .
+    container_name: task_manager_app_container
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+    environment:
+      DATABASE_URL: "postgresql://user:password@db:5432/task_manager_db?schema=public"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: development 
+    depends_on:
+      - db
+      - redis
+    restart: always
 
 volumes:
   db_data:

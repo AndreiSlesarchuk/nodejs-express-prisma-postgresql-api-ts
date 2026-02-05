@@ -1,26 +1,33 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { cacheService } from '../services/CacheService';
 import { TaskService } from '../services/TaskService';
 
 const taskService = new TaskService();
 
 export const createTask = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { title, description } = req.body;
-    const newTask = await taskService.createTask(title, description);
+    const newTask = await taskService.createTask(req.body.title, req.body.description);
+    await cacheService.delete('tasks:all');
     res.status(201).json(newTask);
   } catch (error) { next(error); }
 };
 
 export const getTasks = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tasks = await taskService.getAllTasks();
+    const tasks = await cacheService.getOrSet('tasks:all', async () => {
+      return taskService.getAllTasks();
+    })
     res.json(tasks);
   } catch (error) { next(error); }
 };
 
 export const getTaskById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const task = await taskService.getTaskById(Number(req.params.id));
+    const id = Number(req.params.id);
+    const task = await cacheService.getOrSet(`tasks:${id}`, () => 
+      taskService.getTaskById(id)
+    );
+    
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.json(task);
   } catch (error) { next(error); }
@@ -29,6 +36,7 @@ export const getTaskById = async (req: Request, res: Response, next: NextFunctio
 export const updateTask = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const task = await taskService.updateTask(Number(req.params.id), req.body);
+    await cacheService.delete('tasks:all');
     res.json(task);
   } catch (error) { next(error); }
 };
@@ -36,6 +44,7 @@ export const updateTask = async (req: Request, res: Response, next: NextFunction
 export const deleteTask = async (req: Request, res: Response, next: NextFunction) => {
   try {
     await taskService.deleteTask(Number(req.params.id));
+    await cacheService.delete('tasks:all');
     res.status(204).send();
   } catch (error) { next(error); }
 };
