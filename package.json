@@ -30,10 +30,14 @@
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.17.2",
+    "rate-limit-redis": "^4.3.1",
+    "redis": "^5.10.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "winston": "^3.19.0",
     "zod": "^4.3.6"
   }
 }

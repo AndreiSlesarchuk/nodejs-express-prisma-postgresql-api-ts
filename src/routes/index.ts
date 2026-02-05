@@ -1,7 +1,8 @@
-import { Router } from 'express';
-import taskRoutes from './taskRoutes';
-import authRoutes from './authRoutes'; // Импорт новых роутов
-import { Request, Response } from 'express';
+import { Router } from "express";
+import taskRoutes from "./taskRoutes";
+import authRoutes from "./authRoutes"; 
+import { Request, Response } from "express";
+import { authLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
 
@@ -10,10 +11,10 @@ router.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "UP", timestamp: new Date().toISOString() });
 });
 
-// Auth routes (public) 
-router.use('/auth', authRoutes);
+// Auth routes (public)
+router.use("/auth", authLimiter, authRoutes);
 
 // Task routes
-router.use('/tasks', taskRoutes);
+router.use("/tasks", taskRoutes);
 
 export default router;
