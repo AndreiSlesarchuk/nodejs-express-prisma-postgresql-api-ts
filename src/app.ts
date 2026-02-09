@@ -7,6 +7,7 @@ import routes from './routes';
 import { swaggerDocument } from './swaggerDocs';
 import { apiLimiter } from './middleware/rateLimiter';
 import { connectRedis } from './redisClient';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ const startServer = async () => {
 
 // --- Middleware ---
 app.use(express.json());
+app.use(cookieParser());
 app.use(requestLogger);
 
 // --- Documentation ---
