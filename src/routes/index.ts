@@ -12,7 +12,8 @@ router.get("/health", (req: Request, res: Response) => {
 });
 
 // Auth routes (public)
-router.use("/auth", authLimiter, authRoutes);
+// router.use("/auth", authLimiter, authRoutes);
+router.use("/auth", authRoutes);
 
 // Task routes
 router.use("/tasks", taskRoutes);

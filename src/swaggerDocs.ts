@@ -13,7 +13,6 @@ export const swaggerDocument = {
   ],
   components: {
     securitySchemes: {
-      // Определение метода авторизации
       bearerAuth: {
         type: 'http',
         scheme: 'bearer',
@@ -21,42 +20,86 @@ export const swaggerDocument = {
       },
     },
     schemas: {
-      Task: {
+      // --- User Schemas ---
+      RegisterRequest: {
         type: 'object',
-        required: ['title'],
+        required: ['username', 'email', 'password'],
         properties: {
-          id: { type: 'integer', example: 1 },
-          title: { type: 'string', example: 'Buy milk' },
-          description: { type: 'string', example: 'Go to the store' },
-          completed: { type: 'boolean', example: false },
-          createdAt: { type: 'string', format: 'date-time' },
+          username: { type: 'string', example: 'john_doe' },
+          email: { type: 'string', example: 'john@example.com' },
+          password: { type: 'string', example: 'securePassword123' },
         },
       },
       LoginRequest: {
         type: 'object',
         required: ['username', 'password'],
         properties: {
-          username: { type: 'string', example: 'admin' },
-          password: { type: 'string', example: 'admin' },
+          username: { type: 'string', example: 'john_doe' },
+          password: { type: 'string', example: 'securePassword123' },
         },
       },
       AuthResponse: {
         type: 'object',
         properties: {
-          message: { type: 'string', example: 'Auth successful' },
-          accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+          message: { type: 'string', example: 'Success' },
+          accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1Ni...' },
+          user: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer' },
+              username: { type: 'string' },
+              email: { type: 'string' },
+            },
+          },
+        },
+      },
+      // --- Task Schemas ---
+      Task: {
+        type: 'object',
+        required: ['title'],
+        properties: {
+          id: { type: 'integer', example: 1 },
+          title: { type: 'string', example: 'Refactor API' },
+          description: { type: 'string', example: 'Update Swagger and Zod schemas' },
+          completed: { type: 'boolean', example: false },
+          authorId: { type: 'integer', example: 5 },
+          assignees: {
+            type: 'array',
+            items: { type: 'integer' },
+            description: 'Array of User IDs assigned to this task',
+          },
+          createdAt: { type: 'string', format: 'date-time' },
         },
       },
     },
   },
-  // Применяем авторизацию ко всем путям по умолчанию
+  // Apply authentication globally by default
   security: [{ bearerAuth: [] }],
   paths: {
+    // --- Auth Routes ---
+    '/api/auth/register': {
+      post: {
+        summary: 'Register a new user',
+        tags: ['Auth'],
+        security: [], // Public
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/RegisterRequest' } },
+          },
+        },
+        responses: {
+          201: { description: 'User created successfully' },
+          400: { description: 'Validation error' },
+          409: { description: 'User already exists' },
+        },
+      },
+    },
     '/api/auth/login': {
       post: {
-        summary: 'Login to get JWT token',
+        summary: 'Login to get access token',
         tags: ['Auth'],
-        security: [], // Логин должен быть доступен без токена
+        security: [], // Public
         requestBody: {
           required: true,
           content: {
@@ -65,7 +108,7 @@ export const swaggerDocument = {
         },
         responses: {
           200: {
-            description: 'Success',
+            description: 'Login successful',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
             },
@@ -74,14 +117,14 @@ export const swaggerDocument = {
         },
       },
     },
+    // --- Task Routes ---
     '/api/tasks': {
       get: {
         summary: 'Get all tasks',
         tags: ['Tasks'],
-        security: [], // Сделаем просмотр списка публичным, как в твоем коде
         responses: {
           200: {
-            description: 'Success',
+            description: 'List of tasks',
             content: {
               'application/json': {
                 schema: { type: 'array', items: { $ref: '#/components/schemas/Task' } },
@@ -96,12 +139,22 @@ export const swaggerDocument = {
         requestBody: {
           required: true,
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/Task' } },
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['title'],
+                properties: {
+                  title: { type: 'string' },
+                  description: { type: 'string' },
+                  assignees: { type: 'array', items: { type: 'integer' } },
+                },
+              },
+            },
           },
         },
         responses: {
           201: {
-            description: 'Created',
+            description: 'Task created',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/Task' } },
             },
@@ -119,7 +172,7 @@ export const swaggerDocument = {
         ],
         responses: {
           200: {
-            description: 'Found',
+            description: 'Task details',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/Task' } },
             },
@@ -148,8 +201,8 @@ export const swaggerDocument = {
           },
         },
         responses: {
-          200: { description: 'Updated' },
-          401: { description: 'Unauthorized' },
+          200: { description: 'Task updated' },
+          404: { description: 'Task not found' },
         },
       },
       delete: {
@@ -159,14 +212,15 @@ export const swaggerDocument = {
           { name: 'id', in: 'path', required: true, schema: { type: 'integer' } },
         ],
         responses: {
-          204: { description: 'Deleted' },
-          401: { description: 'Unauthorized' },
+          204: { description: 'Task deleted' },
+          403: { description: 'Forbidden - Not your task' },
         },
       },
     },
+    // --- System Routes ---
     '/api/health': {
       get: {
-        summary: 'Check API health status',
+        summary: 'Health check',
         tags: ['System'],
         security: [],
         responses: {
@@ -177,7 +231,7 @@ export const swaggerDocument = {
                 schema: {
                   type: 'object',
                   properties: {
-                    status: { type: 'string', example: 'UP' },
+                    status: { type: 'string' },
                     timestamp: { type: 'string' },
                   },
                 },

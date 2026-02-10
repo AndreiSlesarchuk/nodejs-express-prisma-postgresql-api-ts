@@ -35,6 +35,7 @@ services:
       DATABASE_URL: "postgresql://user:password@db:5432/task_manager_db?schema=public"
       REDIS_URL: "redis://redis:6379"
       JWT_SECRET: ${JWT_SECRET}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-supersecretrefresh}
       NODE_ENV: development 
     depends_on:
       - db

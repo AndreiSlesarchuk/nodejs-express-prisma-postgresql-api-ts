@@ -4,9 +4,20 @@ import { TaskService } from '../services/TaskService';
 
 const taskService = new TaskService();
 
+interface AuthenticatedRequest extends Request {
+  user: {
+    id: number;
+    username: string;
+    email: string;
+  };
+}
+
 export const createTask = async (req: Request, res: Response, next: NextFunction) => {
+  const authReq = req as AuthenticatedRequest;
   try {
-    const newTask = await taskService.createTask(req.body.title, req.body.description);
+    const { title, description } = req.body;
+    const userId = authReq.user.id;
+    const newTask = await taskService.createTask(userId, req.body.title, req.body.description);
     await cacheService.delete('tasks:all');
     res.status(201).json(newTask);
   } catch (error) { next(error); }

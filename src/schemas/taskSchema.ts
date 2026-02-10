@@ -12,6 +12,7 @@ export const createTaskSchema = z.object({
       .min(3, "Title must be at least 3 characters long")
       .max(50, "Title is too long"),
     description: z.string().optional(),
+    assignees: z.array(z.number()).optional(),
   }),
 });
 
