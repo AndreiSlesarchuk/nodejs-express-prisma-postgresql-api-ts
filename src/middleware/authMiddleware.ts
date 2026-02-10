@@ -3,7 +3,8 @@ import jwt from 'jsonwebtoken';
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Извлекаем токен из "Bearer <TOKEN>"
+  // const token = authHeader && authHeader.split(' ')[1]; // Извлекаем токен из "Bearer <TOKEN>"
+  const token = req.cookies.accessToken || req.headers['authorization']?.split(' ')[1];
 
   if (!token) {
     return res.status(401).json({ error: "Access denied. Token missing." });

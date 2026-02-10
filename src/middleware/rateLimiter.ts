@@ -27,7 +27,7 @@ export const authLimiter = rateLimit({
     sendCommand: sendRedisCommand,
   }),
   windowMs: 60 * 60 * 1000,
-  limit: 5,
+  limit: 100,
   message: { 
     message: 'Too many login attempts, account temporarily blocked.' 
   },
