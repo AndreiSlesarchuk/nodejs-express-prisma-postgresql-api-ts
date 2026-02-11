@@ -21,16 +21,65 @@ The project follows a **Controller-Service-Repository** pattern to ensure separa
 - **Swagger/OpenAPI**: Automated interactive API documentation.
 - **Middleware**: Centralized error handling and request logging.
 
+## 🔐 Security & Authentication
 
+The API implements a robust **Double-Token Authentication** flow:
 
-## 🛠 Tech Stack
+- **JWT Access Tokens**: Short-lived (15m) tokens for authorizing requests.
+- **Refresh Tokens**: Long-lived tokens stored in the database and delivered via **HttpOnly, SameSite Cookies** to prevent XSS and CSRF attacks.
+- **Request Validation**: All incoming data is strictly validated using **Zod** schemas before reaching the controllers.
+- **Password Security**: Passwords are salted and hashed using **Bcryptjs**.
+
+## 🛠 Tech Stack & Tools
 
 - **Runtime**: Node.js (v20+)
 - **Language**: TypeScript (Strict mode)
 - **ORM**: Prisma 7.x (with Driver Adapters)
+- **Authentication**: JWT (Access & Refresh Tokens)
+- **Validation**: Zod (Schema-based request validation)
+- **Password Hashing**: Bcryptjs
+- **Caching & Sessions**: Redis
 - **Docs**: Swagger UI & OpenAPI 3.0
 - **Database**: PostgreSQL
-- **Development Tooling**: `tsx` for fast execution, `tsc` for builds.
+- **Containerization**: Docker & Docker Compose
+- **Development Tooling**: `tsx` for hot-reload, `eslint` for linting.
+
+## 🔐 Security & Auth Flow
+
+The API implements an enterprise-grade authentication system:
+- **Dual-Token System**: Short-lived Access Tokens (15m) and long-lived Refresh Tokens (7d).
+- **Secure Storage**: Refresh tokens are delivered via **HttpOnly, SameSite Cookies** to mitigate XSS and CSRF risks.
+- **Database Synchronization**: Refresh tokens are stored in the database to allow session revocation on logout.
+- **Schema Validation**: All input (body, params, query) is sanitized and validated by **Zod** middleware before processing.
+
+## 🔌 API Documentation
+
+### 🔑 Authentication
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | `/api/auth/register` | Create a new user with email, username and password |
+| POST | `/api/auth/login` | Authenticate user and set secure cookies |
+| POST | `/api/auth/refresh` | Get a new Access Token using your Refresh Token |
+| POST | `/api/auth/logout` | Revoke tokens and clear secure cookies |
+
+### 📝 Tasks
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | `/api/tasks` | Fetch all tasks (User-specific or public) |
+| POST | `/api/tasks` | Create a task (Automatic author assignment from JWT) |
+| GET | `/api/tasks/{id}` | Get detailed task information |
+| PATCH | `/api/tasks/{id}` | Update title, description or status |
+| DELETE | `/api/tasks/{id}` | Securely remove a task |
+
+## 🐳 Docker Development
+
+The environment is fully containerized for consistent development:
+
+- **Hot-Reloading**: Uses Docker Volumes to sync your local code with the container in real-time.
+- **Multi-Container Setup**: Orchestrates Node.js, PostgreSQL, and Redis seamlessly.
+- **Commands**:
+  - `docker-compose up --build`: Start the entire stack.
+  - `docker-compose down`: Stop and remove containers.
 
 ## 🚀 Getting Started
 
@@ -42,6 +91,10 @@ The project follows a **Controller-Service-Repository** pattern to ensure separa
 Create a `.env` file in the root directory:
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5433/task_manager_db?schema=public"
+JWT_SECRET="your_access_token_secret"
+REFRESH_TOKEN_SECRET="your_refresh_token_secret"
+REDIS_URL="redis://redis:6379"
+NODE_ENV="development"
 
 ### 3. Installation & Database SetupBash# Install dependencies
     npm install
@@ -58,16 +111,6 @@ DATABASE_URL="postgresql://user:password@localhost:5433/task_manager_db?schema=p
 # Production build
     npm run build
     npm start
-
-🔌 API Documentation
-    Tasks
-        Method  Endpoint        Description
-        GET     /api/tasks      Fetch all tasks from DBP
-        POST    /api/tasks      Create a new task (JSON body required)
-        GET     /api/tasks/{id} Get a specific task
-        PATCH   /api/tasks/{id} Update task status or content
-        DELETE  /api/tasks/{id} Remove a task
-        GET     /api/health     Check API & Database status
 
     Sample POST Body:
         JSON {
